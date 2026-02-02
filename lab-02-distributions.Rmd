@@ -1,0 +1,445 @@
+---
+title: "EAES 480 — Lab 02: Distributions (Fill-in Rmd)"
+author: "Student: ____________________"
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    number_sections: true
+    df_print: paged
+---
+
+<!--
+LAB CONTRACT (read me):
+- Discuss concepts freely; type your own code; cite collaborators.
+- Your work must knit (Run All) from a clean session.
+- Put ALL code in chunks (not in the Console only).
+-->
+
+# 1. Lab overview + contract
+
+## Learning goals
+
+By the end of this lab you should be able to:
+
+1. Visualize continuous distributions (histogram, density, boxplot)
+2. Describe distributions using center + spread (mean/median, sd/IQR, quantiles)
+3. Interpret skew, modality, and outliers in an environmental context
+4. Connect plots ↔ summary statistics in clear scientific language
+5. Produce a reproducible analysis (knits top-to-bottom)
+
+## Deliverables
+
+Submit **all** of the following:
+
+- A knitted **HTML** (or PDF if requested)
+- Your completed **`.Rmd`** file
+- (Optional) any saved figures in a `figs/` folder
+
+## Collaboration rules
+
+- You may talk through ideas with classmates.
+- **All code must be typed by you.**
+- If you collaborated, add a note near the top:
+
+> Collaborators (if any): _______________________________
+
+## Grading rubric (lightweight)
+
+- **Code correctness (40%)**: chunks run, outputs sensible, no silent failures
+- **Interpretation quality (40%)**: answers are specific, distribution-aware, complete sentences
+- **Reproducibility (20%)**: knits cleanly; no console-only objects; no hard-coded local paths
+
+---
+
+# 2. Reproducibility block (run this first)
+
+```{r setup, echo=TRUE, message=FALSE, warning=FALSE}
+# GOAL: Load packages and set up a clean, reproducible session.
+# TODO: Fill in the blanks marked ___ and run this chunk first.
+
+# 1) Packages
+library(tidyverse)
+library(skimr)
+library(janitor)
+
+# 2) Set a seed so any randomness is reproducible
+set.seed(___)
+
+# 3) Read data
+# NOTE: In the course repo, this file should live in a data/ folder.
+# If you are running locally, put the CSV in ./data/ and use:
+# readr::read_csv("data/ctr-carbon-stocks.csv")
+df_raw <- readr::read_csv("___")
+
+# 4) Quick checks
+glimpse(___)
+summary(___)
+```
+
+### Debugging checklist (use before asking for help)
+
+- Did you install missing packages? (`install.packages("skimr")`)
+- Did you spell the column name correctly (case-sensitive)?
+- Did you run chunks **top-to-bottom**?
+- Are you missing `na.rm = TRUE` in a summary?
+- Are you using `scale_fill_*` when mapping `fill=` and `scale_color_*` when mapping `color=`?
+
+---
+
+# 3. Data dictionary: what are we measuring?
+
+## Columns (starter dictionary)
+
+Below is a **starter** dictionary. Expand or correct it as needed.
+
+```{r dictionary, echo=TRUE}
+# GOAL: Inspect names and make a mini-dictionary.
+# TODO: Run and then edit the table below (in markdown) if needed.
+
+names(df_raw)
+skim(df_raw)
+```
+
+### Mini dictionary (edit as you learn)
+Fill in brief descriptions for at least **5 columns**, including your main response variable.
+
+| Column | Units | Meaning (your words) | Expected range / notes |
+|---|---|---|---|
+| Plot |  |  |  |
+| Yr |  |  |  |
+| foresttype |  |  |  |
+| ___ |  |  |  |
+| ___ |  |  |  |
+
+**Prompt (2–3 sentences):** What does **one row** represent in this dataset?
+
+> *Write your answer here.*
+
+---
+
+# 4. Warm-up: small coding tasks (momentum)
+
+## 4.1 Create a working tibble
+
+```{r warmup_df, echo=TRUE}
+# GOAL: Create a clean working dataset named df.
+# TODO: Remove unnecessary columns and keep only what you need.
+
+df <- df_raw %>%
+  janitor::clean_names() %>% 
+  select(___)
+
+# CHECK: df should be a tibble with fewer columns than df_raw
+glimpse(df)
+```
+
+## 4.2 Choose a response variable and a grouping variable
+
+In this lab, you will analyze **one continuous response variable** and compare distributions across **one grouping variable**.
+
+- Suggested response variables (pick ONE): `dwdc_gm2`, `litterc_gm2`, `agunderstoryc_gm2`
+- Suggested grouping variable: `foresttype` (categorical)
+
+```{r choose_vars, echo=TRUE}
+# GOAL: Define which columns you will analyze.
+# TODO: Fill in response_var and group_var as strings.
+
+response_var <- "___"
+group_var    <- "___"
+
+# CHECK: these should print as character strings
+response_var
+group_var
+```
+
+## 4.3 Filter missing values and create a z-score
+
+```{r warmup_clean, echo=TRUE}
+# GOAL: Keep complete cases and create a standardized version of your response variable.
+# TODO: Fill in the blanks.
+
+df2 <- df %>%
+  filter(!is.na(.data[[response_var]])) %>%
+  mutate(
+    response_z = ( .data[[response_var]] - mean(.data[[response_var]], na.rm = TRUE) ) /
+                 sd(.data[[response_var]], na.rm = TRUE)
+  )
+
+# CHECK: df2 should have the same columns as df plus response_z
+glimpse(df2)
+summary(df2$response_z)
+```
+
+**Prompt (1–2 sentences):** Why might z-scores be useful when comparing across variables or datasets?
+
+> *Write your answer here.*
+
+---
+
+# 5. Visualizing distributions (core)
+
+## 5.1 Histogram (choose bins and justify)
+
+```{r hist1, echo=TRUE}
+# GOAL: Make a histogram of the response variable.
+# TODO: Fill in aes(x = ___) and choose bins or binwidth.
+
+ggplot(df2, aes(x = ___)) +
+  geom_histogram(bins = ___) +
+  labs(
+    x = response_var,
+    y = "Count",
+    title = "Histogram of the response variable"
+  ) +
+  theme_classic()
+```
+
+**Prompt (2–3 sentences):** Describe the distribution’s **shape** (skew? modality?), **range**, and anything “weird” you notice.
+
+> *Write your answer here.*
+
+**Prompt (1 sentence):** Why did you choose that number of bins?
+
+> *Write your answer here.*
+
+---
+
+## 5.2 Density plot (shape emphasis)
+
+```{r density1, echo=TRUE}
+# GOAL: Make a density plot for the same variable.
+# TODO: Fill in aes(x = ___) and set a readable alpha.
+
+ggplot(df2, aes(x = ___)) +
+  geom_density(alpha = ___) +
+  labs(
+    x = response_var,
+    y = "Density",
+    title = "Density plot of the response variable"
+  ) +
+  theme_classic()
+```
+
+**Prompt (2 sentences):**
+1) How did smoothing change your interpretation vs the histogram?  
+2) Which plot is better for “shape,” and why?
+
+> *Write your answer here.*
+
+---
+
+## 5.3 Compare groups (facet or color)
+
+```{r compare_groups, echo=TRUE}
+# GOAL: Compare distributions across groups.
+# TODO: Use either (a) fill/color mapping or (b) faceting.
+
+ggplot(df2, aes(x = .data[[response_var]], fill = .data[[group_var]])) +
+  geom_density(alpha = 0.35) +
+  labs(
+    x = response_var,
+    y = "Density",
+    fill = group_var,
+    title = "Group comparison (density)"
+  ) +
+  theme_classic() +
+  theme(legend.position = "bottom")
+```
+
+**Prompt (2–3 sentences):** Do groups differ in **center**, **spread**, or **skew**? Which plot communicates that best?
+
+> *Write your answer here.*
+
+---
+
+# 6. Summary statistics: center + spread (robust vs not)
+
+```{r summary_stats, echo=TRUE}
+# GOAL: Summarize center and spread by group.
+# TODO: Fill in group_by(___) and the response variable blanks.
+
+summ_tbl <- df2 %>%
+  group_by(___) %>%
+  summarize(
+    n      = n(),
+    mean   = mean(___, na.rm = TRUE),
+    median = median(___, na.rm = TRUE),
+    sd     = sd(___, na.rm = TRUE),
+    iqr    = IQR(___, na.rm = TRUE),
+    q25    = quantile(___, 0.25, na.rm = TRUE),
+    q75    = quantile(___, 0.75, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(n))
+
+summ_tbl
+```
+
+**Prompt (2–3 sentences):** When do mean and median disagree here? What does that imply about the distribution?
+
+> *Write your answer here.*
+
+**Prompt (2 sentences):** Which spread metric is more robust here—SD or IQR—and why?
+
+> *Write your answer here.*
+
+---
+
+# 7. Boxplots + outliers (operational definitions)
+
+## 7.1 Boxplot by group
+
+```{r boxplot1, echo=TRUE}
+# GOAL: Make a boxplot comparing groups.
+# TODO: Fill in aes(x=___, y=___). Consider coord_flip() if labels overlap.
+
+ggplot(df2, aes(x = ___, y = ___)) +
+  geom_boxplot() +
+  labs(
+    x = group_var,
+    y = response_var,
+    title = "Boxplot by group"
+  ) +
+  theme_classic()
+```
+
+**Prompt (2–3 sentences):** What does the “box” represent? Is there evidence of skew or unequal spread across groups?
+
+> *Write your answer here.*
+
+---
+
+## 7.2 Outliers via the 1.5 × IQR rule (one group at a time)
+
+Choose ONE group to investigate (e.g., a single forest type).
+
+```{r outliers, echo=TRUE}
+# GOAL: Compute outlier thresholds for a single group and list outliers.
+# TODO: Choose a group value and fill the blanks.
+
+one_group <- "___"  # e.g., "mountain-hemlock" (spelling must match the data)
+
+x <- df2 %>%
+  filter(.data[[group_var]] == one_group) %>%
+  pull(.data[[response_var]])
+
+q1  <- quantile(___, 0.25, na.rm = TRUE)
+q3  <- quantile(___, 0.75, na.rm = TRUE)
+iqr <- q3 - q1
+lower <- q1 - 1.5 * ___
+upper <- q3 + 1.5 * ___
+
+lower; upper
+
+outlier_rows <- df2 %>%
+  filter(.data[[group_var]] == one_group) %>%
+  filter(.data[[response_var]] < lower | .data[[response_var]] > upper)
+
+nrow(outlier_rows)
+outlier_rows
+```
+
+**Prompt (2–3 sentences):** Are these outliers likely measurement error, real process variation, or mixed? What would you check next?
+
+> *Write your answer here.*
+
+---
+
+# 8. Probability mini-module (optional, but aligned to lecture)
+
+We’ll practice probability syntax with a **Uniform(min, max)** assumption. This is usually a **poor** model for environmental variables, but it’s useful to learn the function.
+
+```{r punif_practice, echo=TRUE}
+# GOAL: Use punif() to compute probabilities under a Uniform model.
+# TODO: Fill in q, min, max, and lower.tail.
+
+q   <- ___
+min <- ___
+max <- ___
+
+p_less <- punif(q = ___, min = ___, max = ___, lower.tail = TRUE)
+p_more <- punif(q = ___, min = ___, max = ___, lower.tail = FALSE)
+
+p_less
+p_more
+```
+
+**Prompt (2–3 sentences):**
+1) Interpret `p_less` and `p_more` in words.  
+2) Why is Uniform often a poor model for environmental variables? When might it be defensible?
+
+> *Write your answer here.*
+
+---
+
+# 9. Interpretation checkpoints (graded writing)
+
+### Checkpoint 1 (after hist + density)
+In **2–3 sentences**, describe the distribution shape and propose one plausible environmental process that could produce it.
+
+> *Write your answer here.*
+
+### Checkpoint 2 (after summary stats)
+In **2–3 sentences**, justify whether you would report the mean or median as “typical,” and why.
+
+> *Write your answer here.*
+
+### Checkpoint 3 (after outliers)
+In **2–3 sentences**, explain what “outlier” means operationally and what you would do before deleting any points.
+
+> *Write your answer here.*
+
+### Checkpoint 4 (end)
+If you could report **one figure** and **one table** from this lab to an environmental scientist, what would you choose and why? (2–4 sentences)
+
+> *Write your answer here.*
+
+---
+
+# 10. Extensions (fast finishers)
+
+Choose **one** extension and complete it.
+
+## 10.1 Transformation
+Try a transformation (log or sqrt) and re-plot histogram + density. Did interpretation change?
+
+```{r extension_transform, echo=TRUE}
+# TODO: Create a transformed variable and re-plot.
+df3 <- df2 %>%
+  mutate(response_log = log(___))
+
+# CHECK: show summary to confirm it worked
+summary(df3$response_log)
+```
+
+## 10.2 Compare across a second grouping variable (if available)
+If your dataset has another categorical variable, compare distributions across it.
+
+## 10.3 Identify extremes via z-scores
+List rows where |z| > 3. Are these the same points flagged by IQR outliers?
+
+```{r extension_z, echo=TRUE}
+df2 %>%
+  filter(abs(response_z) > 3) %>%
+  arrange(desc(abs(response_z))) %>%
+  head(20)
+```
+
+---
+
+# 11. Submission + self-check
+
+## Before you knit (Run All)
+- [ ] All chunks run top-to-bottom
+- [ ] No objects created only in the Console
+- [ ] No hard-coded local file paths
+- [ ] All interpretation answers are complete sentences
+
+## After you knit
+- [ ] Figures appear in the output
+- [ ] Tables render and are readable
+- [ ] The HTML/PDF is what you intend to submit
+
+**Save, commit, push, and submit your GitHub repo link on Canvas.**
