@@ -1,4 +1,4 @@
-# Lab 01 — Hands-On Programming in R (HOPR)
+# Lab 02 — Building Intuition and Accurately Describing Data Distributions
 
 **EAES 480: Modern Statistics in Earth & Environmental Science**  
 University of Illinois Chicago  
@@ -8,30 +8,57 @@ Instructor: Dr. Gavin McNicol
 
 ## Overview
 
-This lab is based on the free online textbook  
-**_Hands-On Programming in R_** by Garrett Grolemund.
+This lab introduces **distributions as the foundation of statistical thinking** in Earth & Environmental Science.
 
-The goal of this assignment is to ensure everyone in EAES 480 has a **shared, working foundation in R** before we move on to modern statistical modeling, data workflows, and reproducible research.
+Rather than focusing on formulas, this assignment emphasizes:
+- *seeing* data before summarizing it,
+- choosing appropriate visualizations,
+- describing distributions using robust statistics, and
+- connecting plots to scientific interpretation.
 
-You will work through **Chapters 1–8** of the book by completing exercises directly in an R Markdown (`.Rmd`) file.
+You will work in a structured **R Markdown (`.Rmd`) document** that asks you to:
+- complete missing code,
+- run and inspect plots,
+- and write short interpretation responses throughout.
+
+This lab prepares you for later units on probability, uncertainty, and inference.
+
+---
+
+## Learning Goals
+
+By the end of this lab, you should be able to:
+
+- Visualize continuous data using histograms, density plots, and boxplots  
+- Explain how binning and smoothing affect interpretation  
+- Describe distributions using center, spread, and quantiles  
+- Identify skew, outliers, and multimodality  
+- Connect distributional features to environmental processes  
+- Produce a **fully reproducible** R Markdown analysis
 
 ---
 
 ## What You’ll Do
 
-- Read **Chapters 1–8** of *Hands-On Programming in R*
-- Complete the corresponding exercises in the provided R Markdown template
-- Write and run your own R code in each chunk
-- Knit the document to ensure it runs cleanly from top to bottom
+In the provided R Markdown template, you will:
 
-This is a **practice-focused lab**, not a trick assignment. The goal is fluency, not perfection.
+- Load and inspect an environmental dataset
+- Complete **guided code chunks** (marked with TODOs or blanks)
+- Generate:
+  - histograms and density plots,
+  - grouped comparisons,
+  - boxplots and quantile summaries
+- Answer short **interpretation prompts** in complete sentences
+- Knit the document to confirm it runs cleanly from top to bottom
+
+This is a **thinking + doing lab**: code and interpretation matter equally.
 
 ---
 
 ## Repository Contents
 
-- `lab-01-hopr-template.Rmd`  
-  → The exercise template you will complete and submit  
+- `lab-02-distributions.Rmd`  
+  → The lab template you will complete and submit  
 
 - `README.md`  
   → This file  
@@ -41,53 +68,69 @@ This is a **practice-focused lab**, not a trick assignment. The goal is fluency,
 ## Instructions
 
 1. **Fork or clone** this repository to your own GitHub account
-2. Open `lab-01-hopr-template.Rmd` in **RStudio**
-3. Work through the document **top to bottom**
-4. Add your code **inside the existing code chunks**
-5. Knit regularly to catch errors early
+2. Open `lab-02-distributions.Rmd` in **RStudio**
+3. Work through the document **from top to bottom**
+4. Fill in missing code **only inside the existing code chunks**
+5. Respond to interpretation prompts in plain text (outside code chunks)
+6. Knit the document regularly to catch errors early
 
-💡 *If you get stuck, re-read the book examples first before searching online.*
+> ⚠️ Code that runs in the Console but not in the `.Rmd` does not count.
+
+---
+
+## Reproducibility Requirements
+
+Your submission **must**:
+
+- Knit without errors
+- Run top-to-bottom in a clean R session
+- Include all required libraries in the setup chunk
+- Avoid hard-coded local file paths
+- Use `na.rm = TRUE` where appropriate
+
+These are not stylistic preferences—they are core scientific skills.
 
 ---
 
 ## Submission
 
-- Commit and push your completed `.Rmd` file to your GitHub repo
+- Commit and push your completed `.Rmd` file to your GitHub repository
 - Submit the **GitHub repository link** on Canvas
-- Your document should:
-  - Knit without errors
-  - Contain your own code
-  - Show evidence of engagement with the exercises
+- You do **not** need to submit the knitted HTML unless instructed
+
+Your work will be evaluated on:
+- correctness of code,
+- quality of interpretation,
+- and reproducibility.
 
 ---
 
-## Expectations & Tips
+## Collaboration Policy
 
-- You are encouraged to experiment beyond the minimum
-- Comments in your code are welcome and encouraged
-- Collaboration is fine, but **code you submit must be your own**
-- This lab sets the baseline for the rest of the course—take it seriously
+- You may discuss concepts and strategies with classmates
+- You may not copy code verbatim from others
+- Code you submit must be written and understood by you
+
+If you worked with someone, acknowledge them in a comment.
 
 ---
 
-## Resources
+## Tips for Success
 
-- 📖 *Hands-On Programming in R*  
-  https://rstudio-education.github.io/hopr/
-
-- 🧠 RStudio Cheat Sheets  
-  https://posit.co/resources/cheatsheets/
+- Knit early and often
+- Read error messages carefully—they are usually informative
+- If a plot surprises you, *that’s a feature, not a bug*
+- Focus on **what the distribution is telling you**, not just “getting the answer”
 
 ---
 
 ## Why This Matters
 
-EAES 480 builds toward:
-- Reproducible statistical workflows
-- Modern data visualization
-- Model-based inference
-- Real environmental datasets
+In Earth & Environmental Science:
+- variability is the signal,
+- averages can mislead,
+- and assumptions matter.
 
-A strong R foundation now will save you **a lot** of time later.
+Everything we do later in EAES 480—probability, uncertainty, confidence intervals, models—rests on understanding distributions.
 
-Good luck—and enjoy getting your hands dirty with R.
+This lab is where that foundation is built.
