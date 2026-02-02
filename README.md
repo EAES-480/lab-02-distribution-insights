@@ -9,6 +9,9 @@ Instructor: Dr. Gavin McNicol
 DATASET INFO: https://doi.org/10.2737/ WO-GTR-104.
 US Forest Inventory Analysis Methdology
 
+EXAMPLE PAPER USING THIS DATASET: https://paperpile.com/shared/soZJjvhA4S3mZrbo_aOQ7OA
+Carter and Buma (2025) Different topographic and climatic contexts associated carbon hotspots in a carbon‐dense ecoregion
+
 ## Overview
 
 This lab introduces **distributions as the foundation of statistical thinking** in Earth & Environmental Science.
