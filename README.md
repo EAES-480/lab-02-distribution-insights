@@ -6,6 +6,9 @@ Instructor: Dr. Gavin McNicol
 
 ---
 
+DATASET INFO: https://doi.org/10.2737/ WO-GTR-104.
+US Forest Inventory Analysis Methdology
+
 ## Overview
 
 This lab introduces **distributions as the foundation of statistical thinking** in Earth & Environmental Science.
