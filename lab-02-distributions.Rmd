@@ -28,34 +28,27 @@ By the end of this lab you should be able to:
 3. Interpret skew, modality, and outliers in an environmental context
 4. Connect plots ↔ summary statistics in clear scientific language
 5. Produce a reproducible analysis (knits top-to-bottom)
+  * Remember you will need to set eval = T to execute code chunks when you knit
 
 ## Deliverables
 
 Submit **all** of the following:
 
-- A knitted **HTML** (or PDF if requested)
 - Your completed **`.Rmd`** file
 - (Optional) any saved figures in a `figs/` folder
 
-## Collaboration rules
-
-- You may talk through ideas with classmates.
-- **All code must be typed by you.**
-- If you collaborated, add a note near the top:
-
-> Collaborators (if any): _______________________________
 
 ## Grading rubric (lightweight)
 
-- **Code correctness (40%)**: chunks run, outputs sensible, no silent failures
-- **Interpretation quality (40%)**: answers are specific, distribution-aware, complete sentences
-- **Reproducibility (20%)**: knits cleanly; no console-only objects; no hard-coded local paths
+- **Code correctness (40%)**: chunks run, outputs sensible
+- **Interpretation quality (40%)**: answers are specific, distribution-aware, complete and simple sentences
+- **Reproducibility (20%)**: knits cleanly; no console-only objects
 
 ---
 
 # 2. Reproducibility block (run this first)
 
-```{r setup, echo=TRUE, message=FALSE, warning=FALSE}
+```{r setup, echo=TRUE, message=FALSE, warning=FALSE, eval = F}
 # GOAL: Load packages and set up a clean, reproducible session.
 # TODO: Fill in the blanks marked ___ and run this chunk first.
 
@@ -64,8 +57,8 @@ library(tidyverse)
 library(skimr)
 library(janitor)
 
-# 2) Set a seed so any randomness is reproducible
-set.seed(___)
+# 2) Set a seed so any randomness (e.g. random sampling of a distribution) is reproducible
+set.seed(___) # a seed can be any number
 
 # 3) Read data
 # NOTE: In the course repo, this file should live in a data/ folder.
@@ -78,7 +71,7 @@ glimpse(___)
 summary(___)
 ```
 
-### Debugging checklist (use before asking for help)
+### Debugging checklist (use before asking for help) -- common issues
 
 - Did you install missing packages? (`install.packages("skimr")`)
 - Did you spell the column name correctly (case-sensitive)?
@@ -94,7 +87,7 @@ summary(___)
 
 Below is a **starter** dictionary. Expand or correct it as needed.
 
-```{r dictionary, echo=TRUE}
+```{r dictionary, echo=TRUE, eval = F}
 # GOAL: Inspect names and make a mini-dictionary.
 # TODO: Run and then edit the table below (in markdown) if needed.
 
@@ -119,30 +112,31 @@ Fill in brief descriptions for at least **5 columns**, including your main respo
 
 ---
 
-# 4. Warm-up: small coding tasks (momentum)
+# 4. Warm-up: small coding tasks 
 
 ## 4.1 Create a working tibble
 
-```{r warmup_df, echo=TRUE}
+We want to work 
+
+```{r warmup_df, echo=TRUE, eval = F}
 # GOAL: Create a clean working dataset named df.
-# TODO: Remove unnecessary columns and keep only what you need.
 
 df <- df_raw %>%
-  janitor::clean_names() %>% 
-  select(___)
+  janitor::clean_names() 
 
 # CHECK: df should be a tibble with fewer columns than df_raw
 glimpse(df)
 ```
 
+
 ## 4.2 Choose a response variable and a grouping variable
 
 In this lab, you will analyze **one continuous response variable** and compare distributions across **one grouping variable**.
 
-- Suggested response variables (pick ONE): `dwdc_gm2`, `litterc_gm2`, `agunderstoryc_gm2`
+- Suggested response variables (pick ONE) such as live tree biomass 
 - Suggested grouping variable: `foresttype` (categorical)
 
-```{r choose_vars, echo=TRUE}
+```{r choose_vars, echo=TRUE, eval = F}
 # GOAL: Define which columns you will analyze.
 # TODO: Fill in response_var and group_var as strings.
 
@@ -154,35 +148,13 @@ response_var
 group_var
 ```
 
-## 4.3 Filter missing values and create a z-score
-
-```{r warmup_clean, echo=TRUE}
-# GOAL: Keep complete cases and create a standardized version of your response variable.
-# TODO: Fill in the blanks.
-
-df2 <- df %>%
-  filter(!is.na(.data[[response_var]])) %>%
-  mutate(
-    response_z = ( .data[[response_var]] - mean(.data[[response_var]], na.rm = TRUE) ) /
-                 sd(.data[[response_var]], na.rm = TRUE)
-  )
-
-# CHECK: df2 should have the same columns as df plus response_z
-glimpse(df2)
-summary(df2$response_z)
-```
-
-**Prompt (1–2 sentences):** Why might z-scores be useful when comparing across variables or datasets?
-
-> *Write your answer here.*
-
 ---
 
 # 5. Visualizing distributions (core)
 
 ## 5.1 Histogram (choose bins and justify)
 
-```{r hist1, echo=TRUE}
+```{r hist1, echo=TRUE, eval = F}
 # GOAL: Make a histogram of the response variable.
 # TODO: Fill in aes(x = ___) and choose bins or binwidth.
 
@@ -208,7 +180,7 @@ ggplot(df2, aes(x = ___)) +
 
 ## 5.2 Density plot (shape emphasis)
 
-```{r density1, echo=TRUE}
+```{r density1, echo=TRUE, eval = F}
 # GOAL: Make a density plot for the same variable.
 # TODO: Fill in aes(x = ___) and set a readable alpha.
 
@@ -232,7 +204,7 @@ ggplot(df2, aes(x = ___)) +
 
 ## 5.3 Compare groups (facet or color)
 
-```{r compare_groups, echo=TRUE}
+```{r compare_groups, echo=TRUE, eval = F}
 # GOAL: Compare distributions across groups.
 # TODO: Use either (a) fill/color mapping or (b) faceting.
 
@@ -256,7 +228,7 @@ ggplot(df2, aes(x = .data[[response_var]], fill = .data[[group_var]])) +
 
 # 6. Summary statistics: center + spread (robust vs not)
 
-```{r summary_stats, echo=TRUE}
+```{r summary_stats, echo=TRUE, eval = F}
 # GOAL: Summarize center and spread by group.
 # TODO: Fill in group_by(___) and the response variable blanks.
 
@@ -347,7 +319,7 @@ outlier_rows
 
 ---
 
-# 8. Probability mini-module (optional, but aligned to lecture)
+# 8. Probability
 
 We’ll practice probability syntax with a **Uniform(min, max)** assumption. This is usually a **poor** model for environmental variables, but it’s useful to learn the function.
 
@@ -398,14 +370,14 @@ If you could report **one figure** and **one table** from this lab to an environ
 
 ---
 
-# 10. Extensions (fast finishers)
+# 10. Extensions 
 
 Choose **one** extension and complete it.
 
 ## 10.1 Transformation
 Try a transformation (log or sqrt) and re-plot histogram + density. Did interpretation change?
 
-```{r extension_transform, echo=TRUE}
+```{r extension_transform, echo=TRUE, eval = F}
 # TODO: Create a transformed variable and re-plot.
 df3 <- df2 %>%
   mutate(response_log = log(___))
@@ -442,4 +414,4 @@ df2 %>%
 - [ ] Tables render and are readable
 - [ ] The HTML/PDF is what you intend to submit
 
-**Save, commit, push, and submit your GitHub repo link on Canvas.**
+**Save, commit, push to Github -- indicate with message if finished.**
