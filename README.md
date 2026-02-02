@@ -9,8 +9,13 @@ Instructor: Dr. Gavin McNicol
 DATASET INFO: https://doi.org/10.2737/ WO-GTR-104.
 US Forest Inventory Analysis Methdology
 
-EXAMPLE PAPER USING THIS DATASET: https://paperpile.com/shared/soZJjvhA4S3mZrbo_aOQ7OA
+EXAMPLES OF PAPERS USING THIS DATASET: 
+
+The distribution of tree biomass carbon within the Pacific Coastal Temperate Rainforest, a disproportionally carbon dense forest
+https://paperpile.com/shared/sHQX51b0fSs21CS9ZVH8qMg
+
 Carter and Buma (2025) Different topographic and climatic contexts associated carbon hotspots in a carbon‐dense ecoregion
+https://paperpile.com/shared/soZJjvhA4S3mZrbo_aOQ7OA
 
 ## Overview
 
