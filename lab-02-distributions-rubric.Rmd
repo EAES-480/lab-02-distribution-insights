@@ -1,0 +1,452 @@
+---
+title: "EAES 480 — Lab 02: Distributions (Fill-in Rmd)"
+author: "Student: Gavin (Rubric)"
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    number_sections: true
+    df_print: paged
+---
+
+<!--
+LAB CONTRACT (read me):
+- Discuss concepts freely; type your own code; cite collaborators.
+- Your work must knit (Run All) from a clean session.
+- Put ALL code in chunks (not in the Console only).
+-->
+
+# 1. Lab overview + contract
+
+## Learning goals
+
+By the end of this lab you should be able to:
+
+1. Visualize continuous distributions (histogram, density, boxplot)
+2. Describe distributions using center + spread (mean/median, sd/IQR, quantiles)
+3. Interpret skew, modality, and outliers in an environmental context
+4. Connect plots ↔ summary statistics in clear scientific language
+5. Produce a reproducible analysis (knits top-to-bottom)
+  * Remember you will need to set eval = T to execute code chunks when you knit
+
+## Deliverables
+
+Submit **all** of the following:
+
+- Your completed **`.Rmd`** file
+- (Optional) any saved figures in a `figs/` folder
+
+
+## Grading rubric (lightweight)
+
+- **Code correctness (40%)**: chunks run, outputs sensible
+- **Interpretation quality (40%)**: answers are specific, distribution-aware, complete and simple sentences
+- **Reproducibility (20%)**: knits cleanly; no console-only objects
+
+We'll be using data from the (US National Forest Inventory)[https://research.fs.usda.gov/programs/nfi#data-collection-and-inventory-methods]
+
+
+---
+
+# 2. Reproducibility block (run this first)
+
+```{r setup, echo=TRUE, message=FALSE, warning=FALSE, eval = T}
+# GOAL: Load packages and set up a clean, reproducible session.
+# TODO: Fill in the blanks marked ___ and run this chunk first.
+
+# 1) Packages
+library(tidyverse)
+library(skimr)
+library(janitor)
+
+# 2) Set a seed so any randomness (e.g. random sampling of a distribution) is reproducible
+set.seed(10) # a seed can be any number
+
+# 3) Read data
+# NOTE: In the course repo, this file should live in a data/ folder.
+# If you are running locally, put the CSV in ./data/ and use:
+# readr::read_csv("data/rainforest-tree-carbon.csv")
+df_raw <- readr::read_csv("data/rainforest-tree-carbon.csv")
+
+# 4) Quick checks
+glimpse(df_raw)
+summary(df_raw)
+```
+
+### Debugging checklist (use before asking for help) -- common issues
+
+- Did you install missing packages? (`install.packages("skimr")`)
+- Did you spell the column name correctly (case-sensitive)?
+- Did you run chunks **top-to-bottom**?
+- Are you missing `na.rm = TRUE` in a summary?
+- Are you using `scale_fill_*` when mapping `fill=` and `scale_color_*` when mapping `color=`?
+
+---
+
+# 3. Data dictionary: what are we measuring?
+
+## Columns (starter dictionary)
+
+Below is a **starter** dictionary. Expand or correct it as needed.
+
+```{r dictionary, echo=TRUE, eval = T}
+# GOAL: Inspect names and make a mini-dictionary.
+# TODO: Run and then edit the table below (in markdown) if needed.
+
+names(df_raw)
+skim(df_raw)
+```
+
+### Mini dictionary (edit as you learn)
+Fill in brief descriptions for at least **5 columns**, including your main response variable.
+
+| Column | Units | Meaning (your words) | Expected range / notes |
+|---|---|---|---|
+| Plot | unitless | plot identifier  | hundreds-thousands of plots |
+| Yr | year integer | the survey year | 1995, 1998, 2007, 2013, 2020 |
+| foresttype | categorical | surrounding landscape | one of a 12 plus NA |
+| livetree_C_Mg_ha | mega-grams of carbon per hectare | live tree biomass carbon | 0 to >1,000 |
+| BGtree_C_Mg_ha | mega-grams of carbon per hectare | belowground tree biomass | 0 to >1,000 |
+
+**Prompt (2–3 sentences):** What does **one row** represent in this dataset?
+
+> One row in the dataset contains a set of carbon stock estimates for different forest components for a given tree species found within one plot in the forest inventory analysis in a given year. The same plots were revistied in different years.
+
+---
+
+# 4. Warm-up: small coding tasks 
+
+## 4.1 Create a working tibble
+
+```{r warmup_df, echo=TRUE, eval = T}
+# GOAL: Create a clean working dataset named df.
+
+df <- df_raw %>%
+  janitor::clean_names() 
+
+# CHECK: df should be a tibble with fewer columns than df_raw
+glimpse(df)
+```
+
+
+## 4.2 Choose a response variable and a grouping variable
+
+In this lab, you will analyze **one continuous response variable** and compare distributions across **one grouping variable**.
+
+- Suggested response variables (pick ONE) such as live tree biomass 
+- Suggested grouping variable: `foresttype` (categorical)
+
+```{r choose_vars, echo=TRUE, eval = T}
+# GOAL: Define which columns you will analyze.
+# TODO: Fill in response_var and group_var as strings.
+
+response_var <- "standingdead_c_gm2"
+group_var    <- "common_name"
+
+# CHECK: these should print as character strings
+response_var
+group_var
+```
+`
+
+---
+
+# 5. Visualizing distributions (core)
+
+## 5.1 Histogram (choose bins and justify)
+
+```{r hist1, echo=TRUE, eval = T}
+# GOAL: Make a histogram of the response variable.
+# TODO: Fill in aes(x = ___) and choose bins or binwidth.
+
+ggplot(df, aes(x = standingdead_c_gm2)) +
+  geom_histogram(bins = 50) +
+  labs(
+    x = response_var,
+    y = "Count",
+    title = "Histogram of the response variable"
+  ) +
+  theme_classic()
+```
+
+**Prompt (2–3 sentences):** Describe the distribution’s **shape** (skew? modality?), **range**, and anything “weird” you notice.
+
+> The distribution is uni-modal and has a right-skew, with a few rare very high values. Many observations were zero. The ranges is wide, from zero to over 100,000. I only used 10 bins at first, which made the shape look a bit distorted, but after increasing bin number it smoothed things out.
+
+**Prompt (1 sentence):** Why did you choose that number of bins?
+
+> Reducing the bin size also brought down the y-axis maximum, which meant the smaller counts were relatively more visible.
+
+---
+
+## 5.2 Density plot (shape emphasis)
+
+```{r density1, echo=TRUE, eval = T}
+# GOAL: Make a density plot for the same variable.
+# TODO: Fill in aes(x = ___) and set a readable alpha.
+
+ggplot(df, aes(x = standingdead_c_gm2)) +
+  geom_density(alpha = 0.7) +
+  labs(
+    x = response_var,
+    y = "Density",
+    title = "Density plot of the response variable"
+  ) +
+  theme_classic()
+```
+
+**Prompt (2 sentences):**
+1) How did smoothing change your interpretation vs the histogram?  
+2) Which plot is better for “shape,” and why?
+
+> The shape did not change much, but the peak can now be identified as slightly greater than zero, although there are a lot of zero cases too. The density plot is better for shape, given the extra detail it can provide -- it avoids combining value ranges within a single bin.
+
+---
+
+## 5.3 Compare groups (facet or color)
+
+```{r compare_groups, echo=TRUE, eval = T}
+# GOAL: Compare distributions across groups.
+# TODO: Use either (a) fill/color mapping or (b) faceting.
+df %>% 
+  filter(standingdead_c_gm2 > 0) %>%  
+ggplot(aes(x = standingdead_c_gm2, fill = common_name)) +
+  geom_density(alpha = 0.35) +
+  labs(
+    x = response_var,
+    y = "Density",
+    fill = group_var,
+    title = "Group comparison (density)"
+  ) +
+  scale_x_continuous(limits = c(0, 50000)) +
+  facet_wrap(~common_name, 
+             ncol = 4) +
+  theme_classic() +
+  theme(legend.position = "bottom")
+```
+
+**Prompt (2–3 sentences):** Do groups differ in **center**, **spread**, or **skew**? Which plot communicates that best?
+
+> Yes, the yellow-cedar, western hemlock, white spruce all have relatively flatter distributions with more higher standing dead biomass. The lodgepole pine, mountain hemlock, and sitka spruce have more smaller values closer to zero with a distinct peak near zero. The faceting is easier to read because it does not overlap the distributions.
+
+---
+
+# 6. Summary statistics: center + spread (robust vs not)
+
+```{r summary_stats, echo=TRUE, eval = T}
+# GOAL: Summarize center and spread by group.
+# TODO: Fill in group_by(___) and the response variable blanks.
+
+summ_tbl <- df %>%
+  group_by(common_name) %>%
+  summarize(
+    n      = n(),
+    mean   = mean(standingdead_c_gm2, na.rm = TRUE),
+    median = median(standingdead_c_gm2, na.rm = TRUE),
+    sd     = sd(standingdead_c_gm2, na.rm = TRUE),
+    iqr    = IQR(standingdead_c_gm2, na.rm = TRUE),
+    q25    = quantile(standingdead_c_gm2, 0.25, na.rm = TRUE),
+    q75    = quantile(standingdead_c_gm2, 0.75, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(n))
+
+summ_tbl
+```
+
+**Prompt (2–3 sentences):** When do mean and median disagree here? What does that imply about the distribution?
+
+> The mean is much larger than the median which suggests there are long right-tails with a few rare large observations.
+
+**Prompt (2 sentences):** Which spread metric is more robust here—SD or IQR—and why?
+
+> The IQR is more useful because the right-tail means the distribution is not symmetric.
+
+---
+
+# 7. Boxplots + outliers (operational definitions)
+
+## 7.1 Boxplot by group
+
+```{r boxplot1, echo=TRUE, eval = T}
+# GOAL: Make a boxplot comparing groups.
+# TODO: Fill in aes(x=___, y=___). Consider coord_flip() if labels overlap.
+
+ggplot(df, aes(x = standingdead_c_gm2, y = common_name)) +
+  geom_boxplot() +
+  labs(
+    x = response_var,
+    y = group_var,
+    title = "Boxplot by group"
+  ) +
+  theme_classic()
+```
+
+**Prompt (2–3 sentences):** What does the “box” represent? Is there evidence of skew or unequal spread across groups?
+
+> The box is the median (vertical or horizontal line) surrounded by the interquartile range (25% and 75%). There is a lot of skews towards higher values (right skew) with larger distances between the 75th percentile - and outliers - and median than between the 25th percentile and median.
+
+---
+
+## 7.2 Outliers via the 1.5 × IQR rule (one group at a time)
+
+Choose ONE group to investigate (e.g., a single forest type).
+
+```{r outliers, echo=TRUE, eval = T}
+# GOAL: Compute outlier thresholds for a single group and list outliers.
+# TODO: Choose a group value and fill the blanks.
+
+one_group <- "western hemlock"  # e.g., "mountain-hemlock" (spelling must match the data)
+
+x <- df %>%
+  filter(.data[[group_var]] == one_group) %>%
+  pull(.data[[response_var]])
+
+q1  <- quantile(x, 0.25, na.rm = TRUE)
+q3  <- quantile(x, 0.75, na.rm = TRUE)
+iqr <- q3 - q1
+lower <- q1 - 1.5 * iqr
+upper <- q3 + 1.5 * iqr
+
+lower; upper
+
+outlier_rows <- df %>%
+  filter(.data[[group_var]] == one_group) %>%
+  filter(.data[[response_var]] < lower | .data[[response_var]] > upper)
+
+nrow(outlier_rows)
+outlier_rows
+```
+
+**Prompt (2–3 sentences):** Are these outliers likely measurement error, real process variation, or mixed? What would you check next?
+
+> The standing dead carbon stocks range from 30-200 kg C m-2. This does not seem completely impossible given that tree death is possible. They appear to be part of the long right-tail of the distribution.
+
+---
+
+# 8. Probability
+
+We’ll practice probability syntax with a **Uniform(min, max)** assumption. This is usually a **poor** model for environmental variables, but it’s useful to learn the function.
+
+```{r punif_practice, echo=TRUE, eval = T}
+# GOAL: Use punif() to compute probabilities under a Uniform model.
+# TODO: Fill in q, min, max, and lower.tail.
+
+q   <- 100000
+min <- 0
+max <- 300000
+
+p_less <- punif(q = q, min = min, max = max, lower.tail = TRUE)
+p_more <- punif(q = q, min = min, max = max, lower.tail = FALSE)
+
+p_less
+p_more
+```
+
+**Prompt (2–3 sentences):**
+1) Interpret `p_less` and `p_more` in words.  
+2) Why is Uniform often a poor model for environmental variables? When might it be defensible?
+
+> 1) `p_less` is the probability of an outcome less than the value of the threshold but greater than the minimium of the distribution. 2) `p_more` is the probability of the outcome more than the threshold (q) but less than the maximum of the distribution.
+
+---
+
+# 9. Interpretation checkpoints (graded writing)
+
+### Checkpoint 1 (after hist + density)
+In **2–3 sentences**, describe the distribution shape and propose one plausible environmental process that could produce it.
+
+> The histogram and density plots follow a long right-tailed distribution with a mininmum value of 0. The presence of dead standing trees is a plausible explanation for dead standing biomass but given trees tend to fall over after dying, this explains the rarity of larger values or implies a generally healthy forest.
+
+### Checkpoint 2 (after summary stats)
+In **2–3 sentences**, justify whether you would report the mean or median as “typical,” and why.
+
+> The median would be less affected by the outlier and extreme values. Since this dataset has a few exceptionally high values, the mean would be biased high relative to the typical value/center
+
+### Checkpoint 3 (after outliers)
+In **2–3 sentences**, explain what “outlier” means operationally and what you would do before deleting any points.
+
+> An outlier is a value in a sample/distribution that is very far away from the center (median) of the distribution. The exact definition is to be smaller than the 25th percentile or greater than the 75th percentile by more than 1.5 * the full IQR.
+
+### Checkpoint 4 (end)
+If you could report **one figure** and **one table** from this lab to an environmental scientist, what would you choose and why? (2–4 sentences)
+
+> I would show the faceted density plots for standing dead wood. This shows both the propensity for trees to die as well as the tendency for dead trees to remain as snags. I would also show the main summary table showing the amount of samples (FIA plots containing a given species) and and the quantified range and center of the distribution of dead standing wood.
+
+---
+
+# 10. Extensions 
+
+Choose **one** extension and complete it.
+
+## 10.1 Transformation
+Try a transformation (log or sqrt) and re-plot histogram + density. Did interpretation change?
+
+```{r extension_transform, echo=TRUE, eval = T}
+# TODO: Create a transformed variable and re-plot.
+df3 <- df %>%
+  mutate(response_log = log(standingdead_c_gm2))
+
+# CHECK: show summary to confirm it worked
+summary(df3$response_log)
+```
+```{r extension-1}
+df3 %>% 
+  ggplot(aes(x = response_log)) + 
+  geom_density() +
+  labs(x = "standing dead wood (gC m-2)") +
+  theme_classic()
+```
+> I previously interpreted the un-transformed plot to show the peak in the distribution close to 0, but here I see that values below `r exp(4)` are quite rare.
+
+## 10.2 Compare across a second grouping variable (if available)
+If your dataset has another categorical variable, compare distributions across it.
+
+```{r extension-2, echo=TRUE, eval = T}
+group_var <- "forresttype"
+# GOAL: Compare distributions across groups.
+# TODO: Use either (a) fill/color mapping or (b) faceting.
+df %>% 
+  filter(standingdead_c_gm2 > 0) %>%  
+ggplot(aes(x = standingdead_c_gm2, fill = foresttype)) +
+  geom_density(alpha = 0.35) +
+  labs(
+    x = response_var,
+    y = "Density",
+    fill = group_var,
+    title = "Group comparison (density)"
+  ) +
+  scale_x_continuous(limits = c(0, 50000)) +
+  facet_wrap(~foresttype, 
+             ncol = 4) +
+  theme_classic() +
+  theme(legend.position = "bottom")
+```
+
+## 10.3 Identify extremes via z-scores
+List rows where |z| > 3. Are these the same points flagged by IQR outliers?
+
+```{r extension_z, echo=TRUE, eval = F}
+df2 %>%
+  filter(abs(response_z) > 3) %>%
+  arrange(desc(abs(response_z))) %>%
+  head(20)
+```
+
+---
+
+# 11. Submission + self-check
+
+## Before you knit (Run All)
+- [x] All chunks run top-to-bottom
+- [x] No objects created only in the Console
+- [x] No hard-coded local file paths
+- [x] All interpretation answers are complete sentences
+
+## After you knit
+- [x] Figures appear in the output
+- [x] Tables render and are readable
+- [x] The HTML/PDF is what you intend to submit
+
+**Save, commit, push to Github -- indicate with message if finished.**
